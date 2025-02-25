@@ -18,7 +18,7 @@ interface LogItem {
     description: string;
 }
 
-export default function HomeScreen() {
+export default function ActivityScreen() {
     const [waiting, setWaiting] = useState<boolean>(true);
     const [data, setData] = useState<LogItem[]>([]);
 
