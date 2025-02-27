@@ -41,6 +41,7 @@
     "react-native-screens": "~4.4.0",
     "react-native-timeline-flatlist": "^0.8.0",
     "react-native-timeline-listview": "^0.2.3",
+    "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5"
   },
