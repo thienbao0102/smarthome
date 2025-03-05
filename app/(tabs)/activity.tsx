@@ -9,6 +9,7 @@ import {
 
 import firebaseService from '../../config/firebase';
 import { onValue, query, limitToLast } from 'firebase/database';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Định nghĩa kiểu dữ liệu cho log
 interface LogItem {
@@ -23,7 +24,6 @@ export default function ActivityScreen() {
   const [data, setData] = useState<LogItem[]>([]);
 
   useEffect(() => {
-
     const logsRef = query(firebaseService.getLogsRef(), limitToLast(50));
 
     const unsubscribe = onValue(logsRef, (snapshot) => {
@@ -39,17 +39,14 @@ export default function ActivityScreen() {
               : `Turn off ${value.switch_id}`,
             description: value.date,
           });
-        } else {
-          // console.log('Condition failed for value:', value);
         }
       });
       setData(items);
       setWaiting(false);
-      console.log('Data fetched successfully:');
+      console.log('Data fetched successfully:', items);
     }, (error) => {
       console.error('Error fetching data:', error);
       setWaiting(false);
-
     });
     return () => unsubscribe();
   }, []);
@@ -67,32 +64,30 @@ export default function ActivityScreen() {
       console.log("Rendering item:", item);
       return (
         <View style={styles.itemContainer}>
-        {/* Time */}
-        <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{item.time}</Text>
+          <View style={styles.timeContainer}>
+            <Text style={styles.timeText}>{item.time}</Text>
+          </View>
+          <View style={styles.circleLineContainer}>
+            <View style={styles.circle} />
+            <View style={styles.line} />
+          </View>
+          <View style={styles.contentContainer}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description}>{item.description}</Text>
+          </View>
         </View>
-        {/* Circle and Line */}
-        <View style={styles.circleLineContainer}>
-          <View style={styles.circle} />
-          <View style={styles.line} />
-        </View>
-        {/* Content */}
-        <View style={styles.contentContainer}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-      </View>
       );
     };
     console.log('Data:', data.length);
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f4f6f8', padding: 10 }}>
+        <Text style={styles.headerText}>History of using equipment</Text>
         <FlatList
           data={data}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 }
@@ -100,50 +95,71 @@ export default function ActivityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingLeft: 5,
-    paddingRight: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#f4f6f8',
   },
-  list: {
-    flex: 1,
+  headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
+    color: '#333',
   },
   itemContainer: {
     flexDirection: 'row',
-    marginVertical: 10,
-    alignItems: 'flex-start',
+    marginVertical: 12,
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   timeContainer: {
-    minWidth: 52,
+    minWidth: 70,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   timeText: {
     textAlign: 'center',
-    backgroundColor: '#ff9797',
+    backgroundColor: '#4CAF50',
     color: 'white',
-    padding: 5,
-    borderRadius: 13,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   circleLineContainer: {
     alignItems: 'center',
     marginHorizontal: 10,
   },
   circle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgb(45,156,219)',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#1E88E5',
   },
   line: {
     width: 2,
-    height: '100%',
-    backgroundColor: 'rgb(45,156,219)',
+    height: 40,
+    backgroundColor: '#1E88E5',
   },
   contentContainer: {
     flex: 1,
+    paddingLeft: 10,
   },
   title: {
     fontWeight: 'bold',
+    fontSize: 14,
+    color: '#333',
   },
   description: {
     color: 'gray',
+    fontSize: 12,
+    marginTop: 2,
   },
 });
