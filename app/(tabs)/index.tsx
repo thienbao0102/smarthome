@@ -1,144 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import {
-    FlatList,
-    StyleSheet,
-    Text,
-    View,
-    ActivityIndicator,
-} from 'react-native';
-
+import { FlatList, Text, View, Switch, ActivityIndicator, StyleSheet } from 'react-native';
 import firebaseService from '../../config/firebase';
 import { onValue, query, limitToLast } from 'firebase/database';
+import HeaderHome from '@/components/ui/HeaderHome';
+import InfoCard from '@/components/ui/InfoCard';
+import DeviceCard from '@/components/ui/DeviceCard';
 
-// Định nghĩa kiểu dữ liệu cho log
-interface LogItem {
-    switch_id: number;
-    time: string;
-    title: string;
-    description: string;
+// Định nghĩa kiểu dữ liệu cho item
+interface SwitchItem {
+    switch: string;
+    value: boolean;
 }
 
-export default function HomeScreen() {
-    const [waiting, setWaiting] = useState<boolean>(true);
-    const [data, setData] = useState<LogItem[]>([]);
+function HomeScreen() {
+    const [data, setData] = useState<SwitchItem[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-      
-        const logsRef = query(firebaseService.getLogsRef(), limitToLast(50));
+        const itemsRef = query(firebaseService.getSwitchRef(), limitToLast(50));
 
-        const unsubscribe = onValue(logsRef, (snapshot) => {
-            const items: LogItem[] = [];
+        const unsubscribe = onValue(itemsRef, (snapshot) => {
+            const items: SwitchItem[] = [];
             snapshot.forEach((child) => {
-                const value = child.val();
-                if (typeof value.switch_id === 'number' && typeof value.date === 'string') {
-                    items.unshift({
-                        switch_id: value.switch_id,
-                        time: value.date,
-                        title: value.value
-                            ? `Turn on ${value.switch_id}`
-                            : `Turn off ${value.switch_id}`,
-                        description: value.date,
-                    });
-                }else {
-                  console.log('Condition failed for value:', value);
-              }
+                items.push({
+                    switch: child.key,
+                    value: child.val()
+                });
             });
             setData(items);
-            setWaiting(false);
-            console.log('Data fetched successfully:', items);
+            setLoading(false);
         }, (error) => {
-          console.error('Error fetching data:', error);
-          setWaiting(false);
-          
-      });       
+            console.error('Error fetching data:', error);
+            setLoading(false);
+        });
+
         return () => unsubscribe();
     }, []);
 
-    if (waiting) {
+    const updateData = (item: SwitchItem) => {
+        console.log("item", item.value)
+        firebaseService.updateData(item.switch, item.value);
+    };
+
+    if (loading) {
         return <ActivityIndicator />;
-    } else if (data.length === 0) {
-        return (
-            <View style={styles.itemContainer}>
-                <Text>No Activity</Text>
-            </View>
-        );
-    } else {  
-        const renderItem = ({ item }: any) => (
-            <View style={styles.itemContainer}>
-              {/* Time */}
-              <View style={styles.timeContainer}>
-                <Text style={styles.timeText}>{item.time}</Text>
-              </View>
-              {/* Circle and Line */}
-              <View style={styles.circleLineContainer}>
-                <View style={styles.circle} />
-                <View style={styles.line} />
-              </View>
-              {/* Content */}
-              <View style={styles.contentContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-              </View>
-            </View>
-          );
-        
-          return (
-            <FlatList
-              data={data}
-              renderItem={renderItem}
-              keyExtractor={(item, index) => index.toString()}
-            />
-          );
     }
-}
+
+    return (
+        <View style={styles.container}>
+            <HeaderHome />
+            <InfoCard />
+            <View style={styles.deviceContainer}>
+                {data.map((device, index) => (
+                    <DeviceCard key={index} switchItems={[device]} />
+                ))}
+            </View>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        paddingLeft: 5,
-        paddingRight: 5,
-    },
-    list: {
+        backgroundColor: '#2C2C2C',
         flex: 1,
     },
-    itemContainer: {
+    deviceContainer: {
         flexDirection: 'row',
-        marginVertical: 10,
-        alignItems: 'flex-start',
-      },
-      timeContainer: {
-        minWidth: 52,
+        flexWrap: 'wrap',
         justifyContent: 'center',
-      },
-      timeText: {
-        textAlign: 'center',
-        backgroundColor: '#ff9797',
-        color: 'white',
-        padding: 5,
-        borderRadius: 13,
-      },
-      circleLineContainer: {
-        alignItems: 'center',
-        marginHorizontal: 10,
-      },
-      circle: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: 'rgb(45,156,219)',
-      },
-      line: {
-        width: 2,
-        height: '100%',
-        backgroundColor: 'rgb(45,156,219)',
-      },
-      contentContainer: {
-        flex: 1,
-      },
-      title: {
-        fontWeight: 'bold',
-      },
-      description: {
-        color: 'gray',
-      },
+    },
 });
+
+export default HomeScreen;

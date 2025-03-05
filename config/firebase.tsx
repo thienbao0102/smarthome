@@ -24,22 +24,26 @@ type SwitchData = {
 
 const firebaseService = {
   getLogsRef() {
-    console.log(ref(database, "logs"));
     // testFirebaseConnection();
     return ref(database, "logs");
   },
 
-  async updateData(data: SwitchData): Promise<void> {
-    const { switchId, value } = data;
+  getSwitchRef() {
+    return ref(database, "switches");
+  },
+
+  async updateData( switch_id: string , value: boolean): Promise<void> {
+    const switchId = switch_id;
     const newValue = !value;
 
     // Kiểm tra kiểu dữ liệu trước khi update
-    if (typeof switchId !== "string" || typeof newValue !== "boolean") {
+    if (typeof(switchId) !== "string" || typeof(newValue) !== "boolean") {
+      console.log("im here 1")
       throw new Error("Invalid data type for update");
     }
 
     // Cập nhật giá trị công tắc
-    await update(ref(database, "switch"), {
+    await update(ref(database, `switches`), {   
       [switchId]: newValue,
     });
 
@@ -58,7 +62,7 @@ const firebaseService = {
       log_id: newKey,
       switch_id: parseInt(data.switchId) || data.switchId, // Chỉ parse nếu là số
       value: data.value,
-      data_date: date,
+      date: date,
     };
 
     await set(ref(database, `logs/${newKey}`), logs);
@@ -66,7 +70,7 @@ const firebaseService = {
 };
 // async function testFirebaseConnection() {
 //   try {
-//     const logsRef = ref(database, "logs");
+//     const logsRef = ref(database, "switches");
 //     const snapshot = await get(logsRef);
 
 //     if (snapshot.exists()) {

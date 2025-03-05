@@ -1,7 +1,7 @@
 {
     "switches": {
-      "1": { "status": true },
-      "2": { "status": false }
+      "1": true,
+      "2": false
     },
     "logs": {
       "log_1": { "switch_id": 1, "value": false, "date": "2025/02/11 14:30:00" },
