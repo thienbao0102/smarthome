@@ -6,50 +6,64 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
-
+import RNPickerSelect from "react-native-picker-select";
 import firebaseService from '../../config/firebase';
 import { onValue, query, limitToLast } from 'firebase/database';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Định nghĩa kiểu dữ liệu cho log
 interface LogItem {
-  switch_id: number;
+  switch: string;
   time: string;
   title: string;
-  description: string;
+  state: string;
+  room: string;
 }
 
 export default function ActivityScreen() {
   const [waiting, setWaiting] = useState<boolean>(true);
   const [data, setData] = useState<LogItem[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+
+  const filteredData = selectedRoom ? data.filter(item => item.room === selectedRoom) : data;
 
   useEffect(() => {
     const logsRef = query(firebaseService.getLogsRef(), limitToLast(50));
-
+    
     const unsubscribe = onValue(logsRef, (snapshot) => {
       const items: LogItem[] = [];
       snapshot.forEach((child) => {
         const value = child.val();
-        if (typeof value.switch_id === 'number' && typeof value.date === 'string') {
+        if (typeof value.switch === 'string' && typeof value.date === 'string') {
           items.unshift({
-            switch_id: value.switch_id,
+            switch: value.switch,
             time: value.date,
-            title: value.value
-              ? `Turn on ${value.switch_id}`
-              : `Turn off ${value.switch_id}`,
-            description: value.date,
+            state:  value.value
+            ? `Turn on`
+            : `Turn off`,
+            title: value.switch,
+            room: value.room
           });
         }
       });
       setData(items);
       setWaiting(false);
-      console.log('Data fetched successfully:', items);
     }, (error) => {
       console.error('Error fetching data:', error);
       setWaiting(false);
     });
     return () => unsubscribe();
   }, []);
+
+  const roomOptions = (data) => {
+    if (!data || data.length === 0) return [];
+    const uniqueRooms = [...new Set(data.map(log => log.room))];
+    return uniqueRooms.map((room, index) => ({ 
+      label: room, 
+      value: room,
+      key: index.toString()
+    }));
+  };
 
   if (waiting) {
     return <ActivityIndicator />;
@@ -61,7 +75,6 @@ export default function ActivityScreen() {
     );
   } else {
     const renderItem = ({ item }: any) => {
-      console.log("Rendering item:", item);
       return (
         <View style={styles.itemContainer}>
           <View style={styles.timeContainer}>
@@ -72,8 +85,9 @@ export default function ActivityScreen() {
             <View style={styles.line} />
           </View>
           <View style={styles.contentContainer}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.description}>{item.description}</Text>
+          <Text style={styles.title}>{item.state}</Text>
+            <Text style={styles.title}>{item.room} - {item.title}</Text>
+            <Text style={styles.time}>{item.time}</Text>
           </View>
         </View>
       );
@@ -82,8 +96,17 @@ export default function ActivityScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f4f6f8', padding: 10 }}>
         <Text style={styles.headerText}>History of using equipment</Text>
+        <RNPickerSelect
+        onValueChange={(value) => setSelectedRoom(value)}
+        items={roomOptions(data)}
+        placeholder={{ label: "Tất Cả", value: null }}
+        style={{
+          inputIOS: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
+          inputAndroid: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
+        }}
+      />
         <FlatList
-          data={data}
+          data={filteredData}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
         />
@@ -157,7 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
-  description: {
+  time: {
     color: 'gray',
     fontSize: 12,
     marginTop: 2,

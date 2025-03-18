@@ -18,69 +18,58 @@ const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 
 type SwitchData = {
-  switchId: string; // Đổi tên để tránh trùng từ khóa
+  switch: string;
   value: boolean;
 };
 
+interface Room {
+  idRoom: string;
+  name: string;
+}
+
 const firebaseService = {
   getLogsRef() {
-    // testFirebaseConnection();
     return ref(database, "logs");
   },
 
-  getSwitchRef() {
-    return ref(database, "switches");
+  getSwitchRef(roomId: string) {
+    return ref(database, `rooms/${roomId}/switches`);
   },
 
-  async updateData( switch_id: string , value: boolean): Promise<void> {
-    const switchId = switch_id;
+  getListRoomhRef() {
+    return get(ref(database, "rooms"));
+  },
+
+  async updateData(room: Room, switchId: string, value: boolean): Promise<void> {
     const newValue = !value;
 
-    // Kiểm tra kiểu dữ liệu trước khi update
-    if (typeof(switchId) !== "string" || typeof(newValue) !== "boolean") {
-      console.log("im here 1")
-      throw new Error("Invalid data type for update");
-    }
-
     // Cập nhật giá trị công tắc
-    await update(ref(database, `switches`), {   
+    await update(ref(database, `rooms/${room.idRoom}/switches`), {
       [switchId]: newValue,
     });
 
     // Ghi log lại thay đổi
-    await this.addLogs({ switchId, value: newValue });
+    await this.addLogs({ switchId: switchId, value: newValue, room: room.name });
   },
 
-  async addLogs(data: SwitchData): Promise<void> {
-    const logsRef = ref(database, "logs");
-    const newKey = push(logsRef).key;
-    const date = new Date().toISOString(); // Dùng toISOString() thay cho Moment.js
+  async addLogs({switchId, value, room}) {
+    const snapshot = await get(ref(database, "logs"));
+    const logsData = snapshot.val();
+    const logsRef = Object.keys(logsData).length;
+    const newKey = 'log_' + (logsRef + 1);
+
+    const date = new Date().toISOString().replace("T", " ").slice(0, 19).replace(/-/g, "/");
 
     if (!newKey) throw new Error("Unable to generate key for logs");
-
     const logs = {
-      log_id: newKey,
-      switch_id: parseInt(data.switchId) || data.switchId, // Chỉ parse nếu là số
-      value: data.value,
+      room: room,
+      switch: switchId,
+      value: value,
       date: date,
     };
 
     await set(ref(database, `logs/${newKey}`), logs);
   },
 };
-// async function testFirebaseConnection() {
-//   try {
-//     const logsRef = ref(database, "switches");
-//     const snapshot = await get(logsRef);
-
-//     if (snapshot.exists()) {
-//       console.log("Fetched logs data:", snapshot.val());
-//     } else {
-//       console.log("No logs found.");
-//     }
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//   }
-// }
 
 export default firebaseService;

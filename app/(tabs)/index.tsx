@@ -11,14 +11,18 @@ interface SwitchItem {
     switch: string;
     value: boolean;
 }
+interface Room {
+    idRoom: string;
+    name: string;
+  }
 
 function HomeScreen() {
     const [data, setData] = useState<SwitchItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [selectedRoom, setSelectedRoom] = useState<Room>();
 
     useEffect(() => {
-        const itemsRef = query(firebaseService.getSwitchRef(), limitToLast(50));
-
+        const itemsRef = query(firebaseService.getSwitchRef(selectedRoom?.idRoom), limitToLast(50));       
         const unsubscribe = onValue(itemsRef, (snapshot) => {
             const items: SwitchItem[] = [];
             snapshot.forEach((child) => {
@@ -28,6 +32,7 @@ function HomeScreen() {
                 });
             });
             setData(items);
+            console.log("items", items);
             setLoading(false);
         }, (error) => {
             console.error('Error fetching data:', error);
@@ -35,24 +40,24 @@ function HomeScreen() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [selectedRoom]);
 
     const updateData = (item: SwitchItem) => {
-        console.log("item", item.value)
-        firebaseService.updateData(item.switch, item.value);
+        firebaseService.updateData(selectedRoom, item.switch, item.value);
     };
 
     if (loading) {
         return <ActivityIndicator />;
     }
-
+    // console.log("select room", selectedRoom);
+    // console.log("data", data);
     return (
         <View style={styles.container}>
-            <HeaderHome />
+            <HeaderHome onRoomSelect={setSelectedRoom} />
             <InfoCard />
             <View style={styles.deviceContainer}>
                 {data.map((device, index) => (
-                    <DeviceCard key={index} switchItems={[device]} />
+                    <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
                 ))}
             </View>
         </View>

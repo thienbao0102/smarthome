@@ -1,10 +1,88 @@
 {
-    "switches": {
-      "1": true,
-      "2": false
+  "rooms": {
+    "living_room": {
+      "name": "Phòng khách",
+      "switches": {
+        "switch_1": true,
+        "switch_2": false
+      }
     },
-    "logs": {
-      "log_1": { "switch_id": 1, "value": false, "date": "2025/02/11 14:30:00" },
-      "log_2": { "switch_id": 2, "value": true, "date": "2025/02/11 15:00:00" }
+    "kitchen": {
+      "name": "Nhà bếp",
+      "switches": {
+        "switch_3": false,
+        "switch_4": true
+      }
+    },
+    "bedroom_1": {
+      "name": "Phòng ngủ 1",
+      "switches": {
+        "switch_5": true,
+        "switch_6": false
+      }
+    },
+    "bedroom_2": {
+      "name": "Phòng ngủ 2",
+      "switches": {
+        "switch_7": true,
+        "switch_8": true
+      }
+    },
+    "bathroom": {
+      "name": "Phòng tắm",
+      "switches": {
+        "switch_9": false
+      }
+    }
+  },
+  "logs": {
+    "log_1": {
+      "room": "Phòng khách",
+      "switch": "Công tắc 1",
+      "value": false,
+      "date": "2025/02/11 14:30:00"
+    },
+    "log_2": {
+      "room": "Nhà bếp",
+      "switch": "Công tắc 3",
+      "value": true,
+      "date": "2025/02/11 15:00:00"
+    },
+    "log_3": {
+      "room": "Phòng ngủ 1",
+      "switch": "Công tắc 5",
+      "value": false,
+      "date": "2025/02/11 16:10:00"
+    },
+    "log_4": {
+      "room": "Phòng ngủ 2",
+      "switch": "Công tắc 8",
+      "value": false,
+      "date": "2025/02/11 17:45:00"
+    },
+    "log_5": {
+      "room": "Phòng tắm",
+      "switch": "Công tắc 9",
+      "value": true,
+      "date": "2025/02/11 18:20:00"
+    },
+    "log_6": {
+      "room": "Phòng khách",
+      "switch": "Công tắc 2",
+      "value": true,
+      "date": "2025/02/11 19:00:00"
+    },
+    "log_7": {
+      "room": "Nhà bếp",
+      "switch": "Công tắc 4",
+      "value": false,
+      "date": "2025/02/11 20:15:00"
+    },
+    "log_8": {
+      "room": "Phòng ngủ 1",
+      "switch": "Công tắc 6",
+      "value": true,
+      "date": "2025/02/11 21:30:00"
     }
   }
+}

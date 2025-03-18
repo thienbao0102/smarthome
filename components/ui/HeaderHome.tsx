@@ -1,12 +1,39 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import firebaseService from '../../config/firebase';
 
-const HeaderHome = () => {
-  const [activeTab, setActiveTab] = useState('Living Room');  
+interface Room {
+  idRoom: string;
+  name: string;
+}
 
-  const tabs = ['All', 'Living Room', 'Kitchen', 'Bathroom'];  
+function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
+  const [activeTab, setActiveTab] = useState<Room>();
+  const [roomNames, setRoomNames] = useState<Room[]>([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const snapshot = await firebaseService.getListRoomhRef();
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const names = Object.entries(data).map(([roomId, room]: any) => ({
+            idRoom: roomId,
+            name: room.name
+          }));
+          setRoomNames(names);
+          setActiveTab(names[0]);
+          onRoomSelect(names[0]);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh sách phòng:", error);
+      }
+    };
+
+    fetchRooms();
+  }, []);
 
   return (
     <SafeAreaView>
@@ -17,16 +44,19 @@ const HeaderHome = () => {
         </View>
       </View>
       <View style={styles.container}>  
-      {tabs.map((tab) => (  
+      {roomNames.map((roomName) => (
         <TouchableOpacity  
-          key={tab}  
-          style={styles.tab}  
-          onPress={() => setActiveTab(tab)}  
+          key={roomName.idRoom}
+          style={styles.tab}
+          onPress={() =>{
+            setActiveTab(roomName)
+            onRoomSelect(roomName)
+          } }  
         >  
-          <Text style={activeTab === tab ? styles.activeText : styles.inactiveText}>  
-            {tab}  
+          <Text style={activeTab === roomName ? styles.activeText : styles.inactiveText}>  
+            {roomName.name}  
           </Text>  
-          {activeTab === tab && <View style={styles.indicator} />}  
+          {activeTab === roomName && <View style={styles.indicator} />}  
         </TouchableOpacity>  
       ))}  
     </View>  

@@ -8,18 +8,24 @@ interface SwitchItem {
 
 interface DeviceCardProps {
   switchItems: SwitchItem[];
+  updateData: (item: SwitchItem) => void;
 }
 
-function DeviceCard ({ switchItems }: DeviceCardProps) {
+function DeviceCard ({ switchItems , updateData }: DeviceCardProps) {
   const [switchStates, setSwitchStates] = useState<{ [key: string]: boolean }>(
     Object.fromEntries(switchItems.map(item => [item.switch, item.value]))
   );
 
   const toggleSwitch = (switchName: string) => {
+    const newValue = !switchStates[switchName];
     setSwitchStates(prevState => ({
       ...prevState,
       [switchName]: !prevState[switchName],
     }));
+    const item = switchItems.find(item => item.switch === switchName);
+    if (item) {
+      updateData({ ...item, value: newValue });
+    }
   };
 
   return (
