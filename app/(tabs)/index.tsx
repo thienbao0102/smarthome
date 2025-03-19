@@ -66,8 +66,8 @@ function HomeScreen() {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#2C2C2C',
-        flex: 1,
+        backgroundColor: '#F4F7FD',
+        flex: 1,    
     },
     deviceContainer: {
         flexDirection: 'row',

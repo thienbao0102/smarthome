@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     padding: 8,
     borderRadius: 10,
-    backgroundColor: '#2C2C2C',
+    backgroundColor: '#232a34',
     // shadowColor: '#000',
     // shadowOffset: { width: 4, height: 4 },
     // shadowOpacity: 0.3,
@@ -88,11 +88,12 @@ const styles = StyleSheet.create({
   textHeader: {
     fontSize: 25,
     fontWeight: 'bold',
+    color: 'black',
   },
   container: {  
     flexDirection: 'row',  
-    backgroundColor: '#2C2C2C',  
-    padding: 10,  
+    // backgroundColor: '#E78C8CFF',  
+    padding: 1,  
   },  
   tab: {  
     flex: 1,  
@@ -100,18 +101,18 @@ const styles = StyleSheet.create({
     position: 'relative',  
   },  
   activeText: {  
-    color: '#FFFFFF',  
+    color: '#000000FF',  
     fontWeight: 'bold',
     paddingBottom : 10,
   },  
   inactiveText: {  
-    color: '#B0B0B0',  
+    color: '#525252FF',  
   },  
   indicator: {  
     position: 'absolute',  
     bottom: 0,  
     height: 4,  
     width: '100%',  
-    backgroundColor: '#32CD32', // Màu xanh lá  
+    backgroundColor: '#207FA8',
   },  
 })
