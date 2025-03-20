@@ -40,19 +40,6 @@ const firebaseService = {
   getListRoomhRef() {
     return get(ref(database, "rooms"));
   },
-  getRoomsRef() {
-    return ref(database, "rooms");
-  },
-
-  async addDevice(roomId: string, deviceName: string) {
-    const newDeviceRef = push(ref(database, `rooms/${roomId}/switches`));
-    await set(newDeviceRef, { name: deviceName, value: false }); // Lưu tên thiết bị
-  },
-
-  async deleteDevice(roomId: string, switchId: string) {
-    await remove(ref(database, `rooms/${roomId}/switches/${switchId}`));
-  },
-
   async updateData(room: Room, switchId: string, value: boolean): Promise<void> {
     const newValue = !value;
 

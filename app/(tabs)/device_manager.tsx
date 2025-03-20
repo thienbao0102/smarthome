@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, TextInput, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import firebaseService from '../../config/firebase';
 import { onValue, ref, remove, push, set } from 'firebase/database';
@@ -20,6 +20,8 @@ const DeviceManagementScreen = () => {
     const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
     const [devices, setDevices] = useState<SwitchItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [newRoomName, setNewRoomName] = useState('');
 
     useEffect(() => {
         const roomRef = ref(firebaseService.database, "rooms");
@@ -33,7 +35,7 @@ const DeviceManagementScreen = () => {
                 });
             });
             setRooms(roomList);
-            if (roomList.length > 0) {
+            if (roomList.length > 0 && !selectedRoom) {
                 setSelectedRoom(roomList[0]); // Chọn phòng đầu tiên mặc định
             }
         });
@@ -93,6 +95,20 @@ const DeviceManagementScreen = () => {
         );
     };
 
+    const addRoom = async () => {
+        if (newRoomName.trim() === '') {
+            Alert.alert("Lỗi", "Tên phòng không được để trống!");
+            return;
+        }
+
+        const newRoomRef = push(ref(firebaseService.database, "rooms"));
+        await set(newRoomRef, { name: newRoomName });
+
+        setNewRoomName('');
+        setModalVisible(false);
+        Alert.alert("Thành công", "Phòng mới đã được thêm!");
+    };
+
     return (
         <View style={styles.container}>
             {/* Dropdown chọn phòng */}
@@ -128,55 +144,57 @@ const DeviceManagementScreen = () => {
                 />
             )}
 
+            {/* Nút thêm thiết bị */}
             <TouchableOpacity style={styles.addButton} onPress={addDevice}>
                 <Ionicons name="add-circle" size={50} color="green" />
             </TouchableOpacity>
+
+            {/* Nút thêm phòng */}
+            <TouchableOpacity style={styles.addRoomButton} onPress={() => setModalVisible(true)}>
+                <Ionicons name="add-circle" size={50} color="blue" />
+            </TouchableOpacity>
+
+            {/* Modal nhập tên phòng mới */}
+            <Modal visible={modalVisible} transparent={true} animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Thêm Phòng Mới</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập tên phòng"
+                            value={newRoomName}
+                            onChangeText={setNewRoomName}
+                        />
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                <Text style={styles.cancelButton}>Hủy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={addRoom}>
+                                <Text style={styles.confirmButton}>Thêm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#F4F7FD',
-    },
-    picker: {
-        backgroundColor: '#fff',
-        marginBottom: 10,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#ddd',
-    },
-    noDevicesText: {
-        textAlign: 'center',
-        fontSize: 18,
-        color: '#666',
-        marginTop: 20,
-    },
-    deviceItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 15,
-        backgroundColor: '#fff',
-        marginBottom: 10,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    deviceText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    addButton: {
-        position: 'absolute',
-        right: 20,
-        bottom: 20,
-    },
+    container: { flex: 1, padding: 20, backgroundColor: '#F4F7FD' },
+    picker: { backgroundColor: '#fff', marginBottom: 10, borderRadius: 10, borderWidth: 1, borderColor: '#ddd' },
+    noDevicesText: { textAlign: 'center', fontSize: 18, color: '#666', marginTop: 20 },
+    deviceItem: { flexDirection: 'row', justifyContent: 'space-between', padding: 15, backgroundColor: '#fff', marginBottom: 10, borderRadius: 10, elevation: 3 },
+    deviceText: { fontSize: 16, fontWeight: 'bold' },
+    addButton: { position: 'absolute', right: 20, bottom: 20 },
+    addRoomButton: { position: 'absolute', left: 20, bottom: 20 },
+    modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
+    modalContent: { width: 300, padding: 20, backgroundColor: '#fff', borderRadius: 10, alignItems: 'center' },
+    modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+    input: { width: '100%', borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 5, marginBottom: 10 },
+    modalButtons: { flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
+    cancelButton: { color: 'red', fontSize: 16 },
+    confirmButton: { color: 'blue', fontSize: 16 }
 });
 
 export default DeviceManagementScreen;
