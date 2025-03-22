@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, update, push, set, get } from "firebase/database";
+import { getDatabase, ref, update, push, set, get, remove } from "firebase/database";
 
 // Cấu hình Firebase
 const firebaseConfig = {
@@ -28,6 +28,7 @@ interface Room {
 }
 
 const firebaseService = {
+  database,
   getLogsRef() {
     return ref(database, "logs");
   },
@@ -39,7 +40,6 @@ const firebaseService = {
   getListRoomhRef() {
     return get(ref(database, "rooms"));
   },
-
   async updateData(room: Room, switchId: string, value: boolean): Promise<void> {
     const newValue = !value;
 
@@ -52,7 +52,7 @@ const firebaseService = {
     await this.addLogs({ switchId: switchId, value: newValue, room: room.name });
   },
 
-  async addLogs({switchId, value, room}) {
+  async addLogs({ switchId, value, room }) {
     const snapshot = await get(ref(database, "logs"));
     const logsData = snapshot.val();
     const logsRef = Object.keys(logsData).length;

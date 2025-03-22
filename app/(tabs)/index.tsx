@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, Text, View, Switch, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import firebaseService from '../../config/firebase';
 import { onValue, query, limitToLast } from 'firebase/database';
 import HeaderHome from '@/components/ui/HeaderHome';
 import InfoCard from '@/components/ui/InfoCard';
 import DeviceCard from '@/components/ui/DeviceCard';
+import AddDeviceButton from '@/components/ui/AddDeviceButton';
 
 // Định nghĩa kiểu dữ liệu cho item
 interface SwitchItem {
@@ -14,7 +15,7 @@ interface SwitchItem {
 interface Room {
     idRoom: string;
     name: string;
-  }
+}
 
 function HomeScreen() {
     const [data, setData] = useState<SwitchItem[]>([]);
@@ -53,27 +54,37 @@ function HomeScreen() {
     // console.log("data", data);
     return (
         <View style={styles.container}>
-            <HeaderHome onRoomSelect={setSelectedRoom} />
-            <InfoCard />
+        <HeaderHome onRoomSelect={setSelectedRoom} />
+        <InfoCard />
+
+        <ScrollView contentContainerStyle={styles.contentContainer}>
             <View style={styles.deviceContainer}>
                 {data.map((device, index) => (
                     <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
                 ))}
+                <AddDeviceButton roomId={selectedRoom?.idRoom} />
             </View>
-        </View>
+        </ScrollView>
+    </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#2C2C2C',
-        flex: 1,
+        backgroundColor: '#F4F7FD',
+        flex: 1
+    },
+    contentContainer: {
+        flexGrow: 1,
+        alignItems: 'center',
+        paddingVertical: 20
     },
     deviceContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-    },
+        gap: 10
+    }
 });
 
 export default HomeScreen;

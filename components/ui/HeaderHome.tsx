@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -38,30 +38,32 @@ function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
 
   return (
     <SafeAreaView>
-      <View style={styles.headerContainer}>
-        <Text style={styles.textHeader}>Home</Text>
-        <View style={styles.iconContainer}>
-          <Ionicons name="settings-sharp" size={30} color="white" />
-        </View>
+    <View style={styles.headerContainer}>
+      <Text style={styles.textHeader}>Home</Text>
+      <View style={styles.iconContainer}>
+        <Ionicons name="settings-sharp" size={30} color="white" />
       </View>
-      <View style={styles.container}>  
-      {roomNames.map((roomName) => (
-        <TouchableOpacity  
-          key={roomName.idRoom}
-          style={styles.tab}
-          onPress={() =>{
-            setActiveTab(roomName)
-            onRoomSelect(roomName)
-          } }  
-        >  
-          <Text style={activeTab === roomName ? styles.activeText : styles.inactiveText}>  
-            {roomName.name}  
-          </Text>  
-          {activeTab === roomName && <View style={styles.indicator} />}  
-        </TouchableOpacity>  
-      ))}  
-    </View>  
-    </SafeAreaView>
+    </View>
+
+    {/* Scrollable Room Tabs */}
+    <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+      {roomNames.map((room) => (
+        <TouchableOpacity
+          key={room.idRoom}
+          style={[styles.tab, activeTab?.idRoom === room.idRoom && styles.activeTab]}
+          onPress={() => {
+            setActiveTab(room);
+            onRoomSelect(room);
+          }}
+        >
+          <Text style={activeTab?.idRoom === room.idRoom ? styles.activeText : styles.inactiveText}>
+            {room.name}
+          </Text>
+          {activeTab?.idRoom === room.idRoom && <View style={styles.indicator} />}
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </SafeAreaView>
   )
 }
 
@@ -79,40 +81,40 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     padding: 8,
     borderRadius: 10,
-    backgroundColor: '#2C2C2C',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 4, height: 4 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 5,
+    backgroundColor: '#232a34',
     elevation: 6,
   },
   textHeader: {
     fontSize: 25,
     fontWeight: 'bold',
+    color: 'black',
   },
-  container: {  
-    flexDirection: 'row',  
-    backgroundColor: '#2C2C2C',  
-    padding: 10,  
-  },  
-  tab: {  
-    flex: 1,  
-    alignItems: 'center',  
-    position: 'relative',  
-  },  
-  activeText: {  
-    color: '#FFFFFF',  
+  scrollContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 5,
+  },
+  activeTab: {
+    borderBottomWidth: 3,
+    borderBottomColor: '#207FA8',
+  },
+  activeText: {
+    color: '#000',
     fontWeight: 'bold',
-    paddingBottom : 10,
-  },  
-  inactiveText: {  
-    color: '#B0B0B0',  
-  },  
-  indicator: {  
-    position: 'absolute',  
-    bottom: 0,  
-    height: 4,  
-    width: '100%',  
-    backgroundColor: '#32CD32', // Màu xanh lá  
-  },  
+  },
+  inactiveText: {
+    color: '#525252',
+  },
+  indicator: {
+    height: 4,
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+  },
 })
