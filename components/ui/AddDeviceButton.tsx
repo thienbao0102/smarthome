@@ -32,8 +32,8 @@ const AddDeviceButton: React.FC<AddDeviceButtonProps> = ({ roomId }) => {
 
 const styles = StyleSheet.create({
     container: {
-        width: 150,
-        height: 150,
+        width: 180,
+        height: 180,
         alignItems: 'center',
         backgroundColor: '#1A1C2D',
         padding: 30,

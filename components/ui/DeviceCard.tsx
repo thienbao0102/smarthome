@@ -67,6 +67,7 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ switchItems, updateData }) => {
 const styles = StyleSheet.create({
   card: {
     width: 180,
+    height: 180,
     borderRadius: 10,
     padding: 15,
     margin: 10,
