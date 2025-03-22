@@ -22,7 +22,8 @@ function HomeScreen() {
     const [selectedRoom, setSelectedRoom] = useState<Room>();
 
     useEffect(() => {
-        const itemsRef = query(firebaseService.getSwitchRef(selectedRoom?.idRoom), limitToLast(50));       
+        // const itemsRef = query(firebaseService.getSwitchRef(selectedRoom?.idRoom), limitToLast(50));  //lấy toàn bộ dữ liệu
+        const itemsRef = firebaseService.getSwitchRef(selectedRoom?.idRoom);     
         const unsubscribe = onValue(itemsRef, (snapshot) => {
             const items: SwitchItem[] = [];
             snapshot.forEach((child) => {
@@ -32,12 +33,11 @@ function HomeScreen() {
                 });
             });
             setData(items);
-            console.log("items", items);
             setLoading(false);
         }, (error) => {
             console.error('Error fetching data:', error);
             setLoading(false);
-        });
+        }); 
 
         return () => unsubscribe();
     }, [selectedRoom]);

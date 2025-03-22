@@ -17,6 +17,7 @@ function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
     const fetchRooms = async () => {
       try {
         const snapshot = await firebaseService.getListRoomhRef();
+        console.log("snapshot", snapshot);
         if (snapshot.exists()) {
           const data = snapshot.val();
           const names = Object.entries(data).map(([roomId, room]: any) => ({
