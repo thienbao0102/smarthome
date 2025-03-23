@@ -17,11 +17,11 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 
-type SwitchData = {
+interface SwitchItem {
+  switchId: string;
   switch: string;
   value: boolean;
-};
-
+}
 interface Room {
   idRoom: string;
   name: string;
@@ -40,30 +40,34 @@ const firebaseService = {
   getListRoomhRef() {
     return get(ref(database, "rooms"));
   },
-  async updateData(room: Room, switchId: string, value: boolean): Promise<void> {
-    const newValue = !value;
+  async updateData(room: Room, SwitchItem: SwitchItem): Promise<void> {
+    const newValue = {
+      switchName: SwitchItem.switch,
+      value: SwitchItem.value,
+    };
 
     // Cập nhật giá trị công tắc
-    const switchRef = ref(database, `rooms/${room.idRoom}/switches/${switchId}`);
-    console.log('switchRef', switchRef);
+    const switchRef = ref(database, `rooms/${room.idRoom}/switches/${SwitchItem.switchId}`);
     await update(switchRef, newValue);
 
     // Ghi log lại thay đổi
-    await this.addLogs({ switchId: switchId, value: newValue, room: room.name });
+    await this.addLogs({ switchName: SwitchItem.switch, value: newValue, room: room.name });
   },
 
-  async addLogs({ switchId, value, room }) {
+  async addLogs({ switchName, value, room }) {
+    var newKey = 'log_1';
     const snapshot = await get(ref(database, "logs"));
-    const logsData = snapshot.val();
-    const logsRef = Object.keys(logsData).length;
-    const newKey = 'log_' + (logsRef + 1);
+    if (snapshot.exists()) {
+      const logs = snapshot.val();
+      const logsRef = Object.keys(logs).length;
+      newKey = 'log_' + (logsRef + 1);
+    }
 
     const date = new Date().toISOString().replace("T", " ").slice(0, 19).replace(/-/g, "/");
 
-    if (!newKey) throw new Error("Unable to generate key for logs");
     const logs = {
       room: room,
-      switch: switchId,
+      switch: switchName,
       value: value,
       date: date,
     };
@@ -72,13 +76,21 @@ const firebaseService = {
   },
 
   async addSwitch(roomId: string) {
+    var newKey = 'switch_1';
     const snapshot = await get(ref(database, `rooms/${roomId}/switches`));
-    const switches = snapshot.val();
-    const logsRef = Object.keys(switches).length;
-    const newKey = 'switch_' + (logsRef + 1);
-    
-    const newDeviceRef = ref(database, `rooms/${roomId}/switches/${ newKey }`);
-    await set(newDeviceRef, false);
+    if (snapshot.exists()) {
+      const switches = snapshot.val();
+      const logsRef = Object.keys(switches).length;
+      newKey = 'switch_' + (logsRef + 1);
+    }
+
+    const newDeviceRef = push(ref(database, `rooms/${roomId}/switches`));
+    const newDevice = {
+      switchName: newKey,
+      value: false,
+    };
+
+    await set(newDeviceRef, newDevice);
   }
 };
 

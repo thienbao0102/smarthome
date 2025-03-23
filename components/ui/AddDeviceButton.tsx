@@ -3,11 +3,16 @@ import { TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import firebaseService from '../../config/firebase';
 
+interface AddDeviceButtonProps {
+    roomId: string;
+    update: React.Dispatch<React.SetStateAction<boolean>>;
+  }
 
-function AddDeviceButton({ roomId }: any) {
+function AddDeviceButton({ roomId, update}: AddDeviceButtonProps) {
     const addDevice = async () => {
-        firebaseService.addSwitch(roomId);
+        await firebaseService.addSwitch(roomId);
         Alert.alert("Thành công", "Đã thêm thiết bị mới!");
+        update((prev) => !prev);
     };
 
     return (

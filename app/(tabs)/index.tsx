@@ -9,6 +9,7 @@ import AddDeviceButton from '@/components/ui/AddDeviceButton';
 
 // Định nghĩa kiểu dữ liệu cho item
 interface SwitchItem {
+    switchId: string;
     switch: string;
     value: boolean;
 }
@@ -23,17 +24,15 @@ function HomeScreen() {
     const [selectedRoom, setSelectedRoom] = useState<Room>();
     const [update, setUpdate] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (!selectedRoom) return;
-    
+    useEffect(() => {   
         const fetchData = async () => {
-            setLoading(true);
             try {
-                const snapshot = await get(firebaseService.getSwitchRef(selectedRoom.idRoom));
+                const snapshot = await get(firebaseService.getSwitchRef(selectedRoom?.idRoom));
                 if (snapshot.exists()) {
                     const items = Object.entries(snapshot.val()).map(([switchId, value]) => ({
-                        switch: switchId,
-                        value: value,
+                        switchId: switchId,
+                        switch: value.switchName,
+                        value: value.value,
                     }));
                     setData(items);
                 } else {
@@ -46,11 +45,10 @@ function HomeScreen() {
         };
     
         fetchData();
-    }, [selectedRoom, update]); // Chạy lại khi selectedRoom hoặc update thay đổi
-    
+    }, [selectedRoom, update]);
 
     const updateData = (item: SwitchItem) => {
-        firebaseService.updateData(selectedRoom, item.switch, item.value);
+        firebaseService.updateData(selectedRoom, item);
         setUpdate(!update);
     };
 
@@ -69,7 +67,7 @@ function HomeScreen() {
                     {data.map((device, index) => (
                         <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
                     ))}
-                    <AddDeviceButton roomId={selectedRoom?.idRoom} />
+                    <AddDeviceButton roomId={selectedRoom?.idRoom} update={setUpdate} />
                 </View>
             </ScrollView>
         </View>

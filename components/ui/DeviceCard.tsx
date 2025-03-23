@@ -3,8 +3,8 @@ import { View, Text, Switch, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomSwitch from './CustomSwitch';
 
-
 interface SwitchItem {
+  switchId: string;
   switch: string;
   value: boolean;
 }
@@ -15,53 +15,49 @@ interface DeviceCardProps {
 }
 
 const DeviceCard: React.FC<DeviceCardProps> = ({ switchItems, updateData }) => {
-  const [switchStates, setSwitchStates] = useState<{ [key: string]: boolean }>(
-    Object.fromEntries(switchItems.map(item => [item.switch, item.value]))
-  );
-
-  const [cardColor, setCardColor] = useState('#2D3445'); 
+  const [switchStates, setSwitchStates] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    const isAnySwitchOn = Object.values(switchStates).some(value => value);
-    setCardColor(isAnySwitchOn ? '#4DA8DA' : '#2D3445'); 
-  }, [switchStates]);
+    // Đồng bộ switchStates với switchItems khi switchItems thay đổi
+    setSwitchStates(
+      Object.fromEntries(switchItems.map((item) => [item.switchId, item.value]))
+    );
+
+  }, [switchItems]);
 
   const toggleSwitch = (switchName: string) => {
     const newValue = !switchStates[switchName];
-    setSwitchStates(prevState => ({
-      ...prevState,
-      [switchName]: newValue,
-    }));
 
-    const item = switchItems.find(item => item.switch === switchName);
+    const item = switchItems.find(item => item.switchId === switchName);
     if (item) {
       updateData({ ...item, value: newValue });
     }
   };
 
+  const isAnySwitchOn = switchItems.some((item) => switchStates[item.switchId]);
+
   return (
-    <View style={[styles.card, { backgroundColor: cardColor }]}>
+    <View style={[styles.card, { backgroundColor: isAnySwitchOn ? '#4DA8DA' : '#2D3445' }]}>
       {switchItems.map((item) => (
-        <View key={item.switch} style={styles.switchContainer}>
+        <View key={item.switchId} style={styles.switchContainer}>
           <View style={styles.switchRow}>
             <Icon name="bulb-outline" size={48} color="#FFFFFF" style={styles.icon} />
             <Text style={styles.switchLabel}>{item.switch}</Text>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '80%' }}>
+          <View style={styles.switchControl}>
             <CustomSwitch
-              value={switchStates[item.switch]}
-              onValueChange={() => toggleSwitch(item.switch)}
+              value={switchStates[item.switchId]}
+              onValueChange={() => toggleSwitch(item.switchId)}
             />
-            <Text style={[styles.switchStatus, { color: switchStates[item.switch] ? '#00FF00' : '#FFFFFF' }]}>
-              {switchStates[item.switch] ? 'On' : 'Off'}
+            <Text style={[styles.switchStatus, { color: switchStates[item.switchId] ? '#00FF00' : '#FFFFFF' }]}>
+              {switchStates[item.switchId] ? 'On' : 'Off'}
             </Text>
           </View>
         </View>
       ))}
     </View>
-
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -79,12 +75,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  deviceName: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
   switchRow: {
     justifyContent: 'space-between',
     width: '100%',
@@ -95,7 +85,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '500',
-    alignItems: 'flex-start',
+  },
+  switchControl: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
   },
   switchStatus: {
     marginLeft: 8,

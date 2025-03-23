@@ -3,86 +3,34 @@
     "living_room": {
       "name": "Phòng khách",
       "switches": {
-        "switch_1": true,
-        "switch_2": false
+        
       }
     },
     "kitchen": {
       "name": "Nhà bếp",
       "switches": {
-        "switch_1": false,
-        "switch_2": true
+        
       }
     },
     "bedroom_1": {
       "name": "Phòng ngủ 1",
       "switches": {
-        "switch_1": true,
-        "switch_2": false
+        
       }
     },
     "bedroom_2": {
       "name": "Phòng ngủ 2",
       "switches": {
-        "switch_1": true,
-        "switch_2": true
+        
       }
     },
     "bathroom": {
       "name": "Phòng tắm",
       "switches": {
-        "switch_1": false
+        
       }
     }
   },
   "logs": {
-    "log_1": {
-      "room": "Phòng khách",
-      "switch": "switch_1",
-      "value": false,
-      "date": "2025/02/11 14:30:00"
-    },
-    "log_2": {
-      "room": "Nhà bếp",
-      "switch": "switch_2",
-      "value": true,
-      "date": "2025/02/11 15:00:00"
-    },
-    "log_3": {
-      "room": "Phòng ngủ 1",
-      "switch": "switch_1",
-      "value": false,
-      "date": "2025/02/11 16:10:00"
-    },
-    "log_4": {
-      "room": "Phòng ngủ 2",
-      "switch": "switch_2",
-      "value": false,
-      "date": "2025/02/11 17:45:00"
-    },
-    "log_5": {
-      "room": "Phòng tắm",
-      "switch": "switch_1",
-      "value": true,
-      "date": "2025/02/11 18:20:00"
-    },
-    "log_6": {
-      "room": "Phòng khách",
-      "switch": "switch_2",
-      "value": true,
-      "date": "2025/02/11 19:00:00"
-    },
-    "log_7": {
-      "room": "Nhà bếp",
-      "switch": "switch_1",
-      "value": false,
-      "date": "2025/02/11 20:15:00"
-    },
-    "log_8": {
-      "room": "Phòng ngủ 1",
-      "switch": "switch_2",
-      "value": true,
-      "date": "2025/02/11 21:30:00"
-    }
   }
 }
