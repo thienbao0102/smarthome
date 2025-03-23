@@ -1,7 +1,6 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import firebaseService from '../../config/firebase';
 
 interface Room {
@@ -9,7 +8,7 @@ interface Room {
   name: string;
 }
 
-function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
+function HeaderHome({ onRoomSelect }: { onRoomSelect: (room: Room) => void }) {
   const [activeTab, setActiveTab] = useState<Room>();
   const [roomNames, setRoomNames] = useState<Room[]>([]);
 
@@ -17,19 +16,18 @@ function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
     const fetchRooms = async () => {
       try {
         const snapshot = await firebaseService.getListRoomhRef();
-        console.log("snapshot", snapshot);
         if (snapshot.exists()) {
           const data = snapshot.val();
           const names = Object.entries(data).map(([roomId, room]: any) => ({
             idRoom: roomId,
-            name: room.name
+            name: room.name,
           }));
           setRoomNames(names);
           setActiveTab(names[0]);
           onRoomSelect(names[0]);
         }
       } catch (error) {
-        console.error("Lỗi lấy danh sách phòng:", error);
+        console.error('Lỗi lấy danh sách phòng:', error);
       }
     };
 
@@ -38,83 +36,63 @@ function HeaderHome ({onRoomSelect}: { onRoomSelect: (room: Room) => void }) {
 
   return (
     <SafeAreaView>
-    <View style={styles.headerContainer}>
-      <Text style={styles.textHeader}>Home</Text>
-      <View style={styles.iconContainer}>
-        <Ionicons name="settings-sharp" size={30} color="white" />
-      </View>
-    </View>
-
-    {/* Scrollable Room Tabs */}
-    <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-      {roomNames.map((room) => (
-        <TouchableOpacity
-          key={room.idRoom}
-          style={[styles.tab, activeTab?.idRoom === room.idRoom && styles.activeTab]}
-          onPress={() => {
-            setActiveTab(room);
-            onRoomSelect(room);
-          }}
-        >
-          <Text style={activeTab?.idRoom === room.idRoom ? styles.activeText : styles.inactiveText}>
-            {room.name}
-          </Text>
-          {activeTab?.idRoom === room.idRoom && <View style={styles.indicator} />}
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </SafeAreaView>
-  )
+      {/* Scrollable Room Tabs */}
+      <ScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {roomNames.map((room) => (
+          <TouchableOpacity
+            key={room.idRoom}
+            style={[
+              styles.tab,
+              activeTab?.idRoom === room.idRoom ? styles.activeTab : styles.inactiveTab,
+            ]}
+            onPress={() => {
+              setActiveTab(room);
+              onRoomSelect(room);
+            }}
+          >
+            <Text style={activeTab?.idRoom === room.idRoom ? styles.activeText : styles.inactiveText}>
+              {room.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
-export default HeaderHome
+export default HeaderHome;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 25,
-  },
-  iconContainer: {
-    borderWidth: 1,
-    borderColor: 'white',
-    padding: 8,
-    borderRadius: 10,
-    backgroundColor: '#232a34',
-    elevation: 6,
-  },
-  textHeader: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: 'black',
-  },
   scrollContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingBottom: 10,
   },
   tab: {
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    borderRadius: 30,
     marginHorizontal: 5,
   },
   activeTab: {
-    borderBottomWidth: 3,
-    borderBottomColor: '#207FA8',
+    backgroundColor: '#3086FF',
+  },
+  inactiveTab: {
+    borderWidth: 1,
+    borderColor: '#525252',
   },
   activeText: {
-    color: '#000',
+    color: 'white',
     fontWeight: 'bold',
+    fontSize: 17,
   },
   inactiveText: {
-    color: '#525252',
+    color: '#C0C0C0',
+    fontSize: 17,
   },
-  indicator: {
-    height: 4,
-    width: '100%',
-    position: 'absolute',
-    bottom: 0,
-  },
-})
+});

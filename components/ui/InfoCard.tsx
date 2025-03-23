@@ -45,15 +45,16 @@ const InfoCard = () => {
 
 const styles = StyleSheet.create({
     container:{
-        margin: 20,
+        marginTop: 20,
+        marginHorizontal: 20,
         borderRadius: 10,
-        backgroundColor: '#DBDCDDFF', // Nền sáng
-        padding: 15,
+        backgroundColor: '#2D3445',
+        padding: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 3, // Hiệu ứng nổi trên Android
+        elevation: 3, 
     },
     itemcontainer: {
         padding: 15,
@@ -70,12 +71,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     value: {
-        color: '#333333', // Màu chữ đậm hơn cho nền sáng
-        fontSize: 18,
+        color: '#FFFFFF',
+        fontSize: 20,
         fontWeight: 'bold',
     },
     label: {
-        color: '#6C757D', // Màu xám trung tính cho nhãn
+        color: '#6C757D',
         fontSize: 12,
     },
 });

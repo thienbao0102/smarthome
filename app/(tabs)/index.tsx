@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { Text, View, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import firebaseService from '../../config/firebase';
-import { onValue, query, limitToLast } from 'firebase/database';
+import { onValue,get, query, limitToLast } from 'firebase/database';
 import HeaderHome from '@/components/ui/HeaderHome';
 import InfoCard from '@/components/ui/InfoCard';
 import DeviceCard from '@/components/ui/DeviceCard';
@@ -21,58 +21,77 @@ function HomeScreen() {
     const [data, setData] = useState<SwitchItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedRoom, setSelectedRoom] = useState<Room>();
+    const [update, setUpdate] = useState<boolean>(false);
 
     useEffect(() => {
-        // const itemsRef = query(firebaseService.getSwitchRef(selectedRoom?.idRoom), limitToLast(50));  //lấy toàn bộ dữ liệu
-        const itemsRef = firebaseService.getSwitchRef(selectedRoom?.idRoom);     
-        const unsubscribe = onValue(itemsRef, (snapshot) => {
-            const items: SwitchItem[] = [];
-            snapshot.forEach((child) => {
-                items.push({
-                    switch: child.key,
-                    value: child.val()
-                });
-            });
-            setData(items);
+        if (!selectedRoom) return;
+    
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const snapshot = await get(firebaseService.getSwitchRef(selectedRoom.idRoom));
+                if (snapshot.exists()) {
+                    const items = Object.entries(snapshot.val()).map(([switchId, value]) => ({
+                        switch: switchId,
+                        value: value,
+                    }));
+                    setData(items);
+                } else {
+                    setData([]);
+                }
+            } catch (error) {
+                console.error('Lỗi lấy dữ liệu:', error);
+            }
             setLoading(false);
-        }, (error) => {
-            console.error('Error fetching data:', error);
-            setLoading(false);
-        }); 
-
-        return () => unsubscribe();
-    }, [selectedRoom]);
+        };
+    
+        fetchData();
+    }, [selectedRoom, update]); // Chạy lại khi selectedRoom hoặc update thay đổi
+    
 
     const updateData = (item: SwitchItem) => {
         firebaseService.updateData(selectedRoom, item.switch, item.value);
+        setUpdate(!update);
     };
 
     if (loading) {
         return <ActivityIndicator />;
     }
-    // console.log("select room", selectedRoom);
-    // console.log("data", data);
     return (
         <View style={styles.container}>
-        <HeaderHome onRoomSelect={setSelectedRoom} />
-        <InfoCard />
-
-        <ScrollView contentContainerStyle={styles.contentContainer}>
-            <View style={styles.deviceContainer}>
-                {data.map((device, index) => (
-                    <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
-                ))}
-                <AddDeviceButton roomId={selectedRoom?.idRoom} />
+            <View style={styles.headerContainer}>
+                <Text style={styles.textHeader}>Wellcom To Home</Text>
             </View>
-        </ScrollView>
-    </View>
+            <InfoCard />
+            <HeaderHome onRoomSelect={setSelectedRoom} />
+            <ScrollView contentContainerStyle={styles.contentContainer}>
+                <View style={styles.deviceContainer}>
+                    {data.map((device, index) => (
+                        <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
+                    ))}
+                    <AddDeviceButton roomId={selectedRoom?.idRoom} />
+                </View>
+            </ScrollView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#F4F7FD',
-        flex: 1
+        backgroundColor: '#202A30',
+        flex: 1,
+        paddingTop: 50,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginStart: 25,
+    },
+    textHeader: {
+        fontSize: 25,
+        fontWeight: 'bold',
+        color: 'white',
     },
     contentContainer: {
         flexGrow: 1,

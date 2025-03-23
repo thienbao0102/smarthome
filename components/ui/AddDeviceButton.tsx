@@ -1,22 +1,12 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { push, ref, set } from 'firebase/database';
 import firebaseService from '../../config/firebase';
 
-interface AddDeviceButtonProps {
-    roomId: string | undefined;
-}
 
-const AddDeviceButton: React.FC<AddDeviceButtonProps> = ({ roomId }) => {
+function AddDeviceButton({ roomId }: any) {
     const addDevice = async () => {
-        if (!roomId) {
-            Alert.alert("Thông báo", "Vui lòng chọn phòng trước!");
-            return;
-        }
-
-        const newDeviceRef = push(ref(firebaseService.database, `rooms/${roomId}/switches`));
-        await set(newDeviceRef, false);
+        firebaseService.addSwitch(roomId);
         Alert.alert("Thành công", "Đã thêm thiết bị mới!");
     };
 
@@ -32,22 +22,22 @@ const AddDeviceButton: React.FC<AddDeviceButtonProps> = ({ roomId }) => {
 
 const styles = StyleSheet.create({
     container: {
-        width: 150,
-        height: 150,
+        width: 180,
+        height: 180,
         alignItems: 'center',
         backgroundColor: '#1A1C2D',
         padding: 30,
-        margin: 10,
+        margin: 6,
         borderRadius: 10,
         borderWidth: 1,
-        borderStyle: 'dashed',
+        justifyContent: 'center',
         borderColor: '#444444',
     },
     button: {
         backgroundColor: '#2589F2',
         borderRadius: 50,
-        width: 50,
-        height: 50,
+        width: 60,
+        height: 60,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 5,

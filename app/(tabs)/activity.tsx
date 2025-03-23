@@ -65,7 +65,7 @@ export default function ActivityScreen() {
     }));
   };
 
- console.log('Data:', data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+
   if (waiting) {
     return <ActivityIndicator />;
   } else if (data.length === 0) {

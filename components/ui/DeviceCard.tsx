@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import CustomSwitch from './CustomSwitch';
 
 
 interface SwitchItem {
@@ -18,11 +19,11 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ switchItems, updateData }) => {
     Object.fromEntries(switchItems.map(item => [item.switch, item.value]))
   );
 
-  const [cardColor, setCardColor] = useState('#ACACACFF'); // Màu mặc định
+  const [cardColor, setCardColor] = useState('#2D3445'); 
 
   useEffect(() => {
     const isAnySwitchOn = Object.values(switchStates).some(value => value);
-    setCardColor(isAnySwitchOn ? '#4DA8DA' : '#ACACACFF'); // Đổi màu khi bật/tắt
+    setCardColor(isAnySwitchOn ? '#4DA8DA' : '#2D3445'); 
   }, [switchStates]);
 
   const toggleSwitch = (switchName: string) => {
@@ -47,13 +48,11 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ switchItems, updateData }) => {
             <Text style={styles.switchLabel}>{item.switch}</Text>
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '80%' }}>
-            <Switch
-              trackColor={{ false: "#767577", true: "#39404DFF" }}
-              thumbColor={switchStates[item.switch] ? "#3483ae" : "#f4f3f4"}
-              onValueChange={() => toggleSwitch(item.switch)}
+            <CustomSwitch
               value={switchStates[item.switch]}
+              onValueChange={() => toggleSwitch(item.switch)}
             />
-            <Text style={[styles.switchStatus, { color: switchStates[item.switch] ? '#00FF00' : '#FF0000' }]}>
+            <Text style={[styles.switchStatus, { color: switchStates[item.switch] ? '#00FF00' : '#FFFFFF' }]}>
               {switchStates[item.switch] ? 'On' : 'Off'}
             </Text>
           </View>

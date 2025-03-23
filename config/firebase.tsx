@@ -44,9 +44,9 @@ const firebaseService = {
     const newValue = !value;
 
     // Cập nhật giá trị công tắc
-    await update(ref(database, `rooms/${room.idRoom}/switches`), {
-      [switchId]: newValue,
-    });
+    const switchRef = ref(database, `rooms/${room.idRoom}/switches/${switchId}`);
+    console.log('switchRef', switchRef);
+    await update(switchRef, newValue);
 
     // Ghi log lại thay đổi
     await this.addLogs({ switchId: switchId, value: newValue, room: room.name });
@@ -70,6 +70,16 @@ const firebaseService = {
 
     await set(ref(database, `logs/${newKey}`), logs);
   },
+
+  async addSwitch(roomId: string) {
+    const snapshot = await get(ref(database, `rooms/${roomId}/switches`));
+    const switches = snapshot.val();
+    const logsRef = Object.keys(switches).length;
+    const newKey = 'switch_' + (logsRef + 1);
+    
+    const newDeviceRef = ref(database, `rooms/${roomId}/switches/${ newKey }`);
+    await set(newDeviceRef, false);
+  }
 };
 
 export default firebaseService;
