@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, update, push, set, get, remove } from "firebase/database";
+import { getDatabase, ref, update, push, set, get, remove, query, limitToLast, limitToFirst } from "firebase/database";
 
 // Cấu hình Firebase
 const firebaseConfig = {
@@ -29,17 +29,26 @@ interface Room {
 
 const firebaseService = {
   database,
+
+  // Lấy danh sách log
   getLogsRef() {
-    return ref(database, "logs");
+    return get(
+      query(ref(database, "logs"), limitToFirst(100))
+    );
   },
 
+  // Lấy danh sách công tắc
   getSwitchRef(roomId: string) {
-    return ref(database, `rooms/${roomId}/switches`);
+    return get(ref(database, `rooms/${roomId}/switches`));
   },
 
+  // Lấy danh sách phòng
   getListRoomhRef() {
-    return get(ref(database, "rooms"));
+    return get(
+      query(ref(database, "rooms"), limitToLast(50)) 
+      );
   },
+  // cập nhật giá trị công tắc + ghi log
   async updateData(room: Room, SwitchItem: SwitchItem): Promise<void> {
     const newValue = {
       switchName: SwitchItem.switch,
@@ -51,10 +60,11 @@ const firebaseService = {
     await update(switchRef, newValue);
 
     // Ghi log lại thay đổi
-    await this.addLogs({ switchName: SwitchItem.switch, value: newValue, room: room.name });
+    await this.addLogs({ newValue: newValue, room: room.name });
   },
 
-  async addLogs({ switchName, value, room }) {
+  // Thêm log
+  async addLogs({ newValue, room }: { newValue: any; room: string }) {
     var newKey = 'log_1';
     const snapshot = await get(ref(database, "logs"));
     if (snapshot.exists()) {
@@ -64,17 +74,17 @@ const firebaseService = {
     }
 
     const date = new Date().toISOString().replace("T", " ").slice(0, 19).replace(/-/g, "/");
-
     const logs = {
       room: room,
-      switch: switchName,
-      value: value,
+      switch: newValue.switchName,
+      value: newValue.value,
       date: date,
     };
 
     await set(ref(database, `logs/${newKey}`), logs);
   },
 
+  // Thêm công tắc
   async addSwitch(roomId: string) {
     var newKey = 'switch_1';
     const snapshot = await get(ref(database, `rooms/${roomId}/switches`));
@@ -91,6 +101,17 @@ const firebaseService = {
     };
 
     await set(newDeviceRef, newDevice);
+  },
+  
+  // Thêm phòng
+  async addRoom(newRoomName: string) {
+    const newRoomRef = push(ref(database, "rooms"));
+    await set(newRoomRef, { name: newRoomName });
+  },
+
+  // Xóa thiết bị
+  async deleteDevice(roomId: string, switchId: string) {
+    await remove(ref(database, `rooms/${roomId}/switches/${switchId}`));
   }
 };
 

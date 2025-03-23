@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { push, ref, set } from 'firebase/database';
 import firebaseService from '../../config/firebase';
 
-const AddRoomButton: React.FC = () => {
+function AddRoomButton({update}: {update: React.Dispatch<React.SetStateAction<boolean>>}) {
     const [modalVisible, setModalVisible] = useState(false);
     const [newRoomName, setNewRoomName] = useState('');
 
@@ -14,11 +14,10 @@ const AddRoomButton: React.FC = () => {
             return;
         }
 
-        const newRoomRef = push(ref(firebaseService.database, "rooms"));
-        await set(newRoomRef, { name: newRoomName });
-
+        await firebaseService.addRoom(newRoomName);
         setNewRoomName('');
         setModalVisible(false);
+        update(prev => !prev);
         Alert.alert("Thành công", "Phòng mới đã được thêm!");
     };
 

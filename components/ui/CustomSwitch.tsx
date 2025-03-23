@@ -1,7 +1,12 @@
 import React from "react";
+import { ColorValue } from "react-native";
 import { TouchableOpacity, Animated, StyleSheet } from "react-native";
 
-const CustomSwitch = ({ value, onValueChange }) => {
+interface CustomSwitchProps {
+  value: boolean;
+  onValueChange: () => void;
+}
+const CustomSwitch = ({ value, onValueChange }: CustomSwitchProps) => {
   const animatedValue = new Animated.Value(value ? 1 : 0);
 
   Animated.timing(animatedValue, {
@@ -22,7 +27,7 @@ const CustomSwitch = ({ value, onValueChange }) => {
 
   return (
     <TouchableOpacity 
-      style={[styles.switchContainer, { backgroundColor: trackColor }]} 
+      style={[styles.switchContainer, { backgroundColor: trackColor}]} 
       activeOpacity={0.8}
       onPress={onValueChange}
     >

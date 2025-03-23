@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import firebaseService from '../../config/firebase';
-import { onValue, ref, remove } from 'firebase/database';
 import AddDeviceButton from '@/components/ui/AddDeviceButton';
 import AddRoomButton from '@/components/ui/AddRoom';
 import { Picker } from '@react-native-picker/picker';
@@ -10,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 interface SwitchItem {
+    switchId: string;
     switch: string;
     value: boolean;
 }
@@ -24,51 +24,60 @@ const DeviceManagementScreen = () => {
     const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
     const [devices, setDevices] = useState<SwitchItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [update, setUpdate] = useState<boolean>(false);
 
+    // Lấy danh sách phòng
     useEffect(() => {
-        const roomRef = ref(firebaseService.database, "rooms");
-
-        const unsubscribe = onValue(roomRef, (snapshot) => {
-            const roomList: Room[] = [];
-            snapshot.forEach((child) => {
-                roomList.push({
-                    idRoom: child.key,
-                    name: child.val().name,
-                });
-            });
-            setRooms(roomList);
-            if (roomList.length > 0 && !selectedRoom) {
-                setSelectedRoom(roomList[0]); // Chọn phòng đầu tiên mặc định
+        const fetchData = async () => {
+            try {
+                const snapshot = await firebaseService.getListRoomhRef();
+                if (snapshot.exists()) {
+                    const roomList = Object.entries(snapshot.val()).map(([idRoom, value]:[string, any]) => ({
+                        idRoom: idRoom,
+                        name: value.name,
+                    }));
+                    setRooms(roomList);
+                    if(roomList.length > 0 && !selectedRoom) {
+                        setSelectedRoom(roomList[0]);
+                    }
+                } else {
+                    setRooms([]);
+                }
+            } catch (error) {
+                console.error('Lỗi lấy dữ liệu:', error);
             }
-        });
+        };
+        fetchData();
+    }, [update]);
 
-        return () => unsubscribe();
-    }, []);
-
+    // Lấy danh sách switch
     useEffect(() => {
         if (!selectedRoom) return;
-
         setLoading(true);
-        const switchRef = firebaseService.getSwitchRef(selectedRoom.idRoom);
-
-        const unsubscribe = onValue(switchRef, (snapshot) => {
-            const items: SwitchItem[] = [];
-            snapshot.forEach((child) => {
-                items.push({
-                    switch: child.key,
-                    value: child.val(),
-                });
-            });
-            setDevices(items);
+        const fetchData = async () => {
+            try {
+                const snapshot = await firebaseService.getSwitchRef(selectedRoom?.idRoom);
+                if (snapshot.exists()) {
+                    const items = Object.entries(snapshot.val()).map(([switchId, value]:[string, any]) => ({
+                        switchId: switchId,
+                        switch: value.switchName,
+                        value: value.value,
+                    }));
+                    setDevices(items);
+                } else {
+                    setDevices([]);
+                }
+            } catch (error) {
+                console.error('Lỗi lấy dữ liệu:', error);
+            }
             setLoading(false);
-        });
+        };
 
-        return () => unsubscribe();
-    }, [selectedRoom]);
+        fetchData();
+    }, [selectedRoom, update]);
 
+    // Xóa thiết bị
     const deleteDevice = async (switchId: string) => {
-        if (!selectedRoom) return;
-
         Alert.alert(
             "Xác nhận xóa",
             "Bạn có chắc chắn muốn xóa thiết bị này?",
@@ -77,7 +86,8 @@ const DeviceManagementScreen = () => {
                 {
                     text: "Xóa",
                     onPress: async () => {
-                        await remove(ref(firebaseService.database, `rooms/${selectedRoom.idRoom}/switches/${switchId}`));
+                        await firebaseService.deleteDevice(selectedRoom?.idRoom as string, switchId);
+                        setUpdate(!update);
                         Alert.alert("Thành công", "Thiết bị đã được xóa!");
                     },
                     style: "destructive",
@@ -113,7 +123,7 @@ const DeviceManagementScreen = () => {
                     renderItem={({ item }) => (
                         <View style={styles.deviceItem}>
                             <Text style={styles.deviceText}>{item.switch}</Text>
-                            <TouchableOpacity onPress={() => deleteDevice(item.switch)}>
+                            <TouchableOpacity onPress={() => deleteDevice(item.switchId)}>
                                 <Ionicons name="trash" size={24} color="red" />
                             </TouchableOpacity>
                         </View>
@@ -123,8 +133,8 @@ const DeviceManagementScreen = () => {
 
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <AddRoomButton />
-                <AddDeviceButton roomId={selectedRoom?.idRoom} />
+                <AddRoomButton update={setUpdate} />
+                <AddDeviceButton roomId={selectedRoom?.idRoom} update={setUpdate} />
             </View>
 
         </SafeAreaView>

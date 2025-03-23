@@ -8,14 +8,12 @@ import {
 } from 'react-native';
 import RNPickerSelect from "react-native-picker-select";
 import firebaseService from '../../config/firebase';
-import { onValue, query, limitToLast } from 'firebase/database';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Định nghĩa kiểu dữ liệu cho log
 interface LogItem {
   switch: string;
-  time: string;
-  title: string;
+  time: Date;
   state: string;
   room: string;
 }
@@ -25,41 +23,42 @@ export default function ActivityScreen() {
   const [data, setData] = useState<LogItem[]>([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  // Lọc dữ liệu theo phòng
   const filteredData = selectedRoom ? data.filter(item => item.room === selectedRoom) : data;
 
+  // Lấy dữ liệu từ Firebase
   useEffect(() => {
-    const logsRef = query(firebaseService.getLogsRef(), limitToLast(50));
-    
-    const unsubscribe = onValue(logsRef, (snapshot) => {
-      const items: LogItem[] = [];
-      snapshot.forEach((child) => {
-        const value = child.val();
-        if (typeof value.switch === 'string' && typeof value.date === 'string') {
-          items.unshift({
-            switch: value.switch,
-            time: value.date,
-            state:  value.value
-            ? `Turn on`
-            : `Turn off`,
-            title: value.switch,
-            room: value.room
-          });
+    const fetchData = async () => {
+        try {
+            const snapshot = await firebaseService.getLogsRef();
+            if (snapshot.exists()) {
+                const items = Object.entries(snapshot.val()).map(([logId, value]:[string, any]) => ({
+                  switch: value.switch,
+                  time: value.date,
+                  state: value.value
+                    ? `Turn on`
+                    : `Turn off`,
+                  room: value.room
+                }));
+                setData(items);
+            } else {
+                setData([]);
+            }
+        } catch (error) {
+            console.error('Lỗi lấy dữ liệu:', error);
         }
-      });
-      setData(items);
-      setWaiting(false);
-    }, (error) => {
-      console.error('Error fetching data:', error);
-      setWaiting(false);
-    });
-    return () => unsubscribe();
-  }, []);
+        setWaiting(false);
+    };
 
-  const roomOptions = (data) => {
+    fetchData();
+}, []);
+
+// Tạo danh sách phòng để chọn
+  const roomOptions = (data: LogItem[]) => {
     if (!data || data.length === 0) return [];
     const uniqueRooms = [...new Set(data.map(log => log.room))];
-    return uniqueRooms.map((room, index) => ({ 
-      label: room, 
+    return uniqueRooms.map((room, index) => ({
+      label: room,
       value: room,
       key: index.toString()
     }));
@@ -70,9 +69,14 @@ export default function ActivityScreen() {
     return <ActivityIndicator />;
   } else if (data.length === 0) {
     return (
-      <View style={styles.itemContainer}>
-        <Text>No Activity</Text>
-      </View>
+      <SafeAreaView>
+        <Text style={styles.headerText}>History of using equipment</Text>
+        <View style={styles.itemContainer}>
+          <Text style={{ textAlign: 'center', fontSize: 16, color: 'gray',}}>No data</Text>
+        </View>
+        
+      </SafeAreaView>
+
     );
   } else {
     const renderItem = ({ item }: any) => {
@@ -86,26 +90,25 @@ export default function ActivityScreen() {
             <View style={styles.line} />
           </View>
           <View style={styles.contentContainer}>
-          <Text style={styles.title}>{item.state}</Text>
-            <Text style={styles.title}>{item.room} - {item.title}</Text>
+            <Text style={styles.title}>{item.state}</Text>
+            <Text style={styles.title}>{item.room} - {item.switch}</Text>
             <Text style={styles.time}>{item.time}</Text>
           </View>
         </View>
       );
     };
-    console.log('Data:', data.length);
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f4f6f8', padding: 10 }}>
         <Text style={styles.headerText}>History of using equipment</Text>
         <RNPickerSelect
-        onValueChange={(value) => setSelectedRoom(value)}
-        items={roomOptions(data)}
-        placeholder={{ label: "Tất Cả", value: null }}
-        style={{
-          inputIOS: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
-          inputAndroid: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
-        }}
-      />
+          onValueChange={(value) => setSelectedRoom(value)}
+          items={roomOptions(data)}
+          placeholder={{ label: "Tất Cả", value: null }}
+          style={{
+            inputIOS: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
+            inputAndroid: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 },
+          }}
+        />
         <FlatList
           data={filteredData}
           renderItem={renderItem}

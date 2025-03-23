@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import firebaseService from '../../config/firebase';
-import { onValue,get, query, limitToLast } from 'firebase/database';
 import HeaderHome from '@/components/ui/HeaderHome';
 import InfoCard from '@/components/ui/InfoCard';
 import DeviceCard from '@/components/ui/DeviceCard';
@@ -24,17 +23,17 @@ function HomeScreen() {
     const [selectedRoom, setSelectedRoom] = useState<Room>();
     const [update, setUpdate] = useState<boolean>(false);
 
-    useEffect(() => {   
+    useEffect(() => {
         const fetchData = async () => {
             try {
-                const snapshot = await get(firebaseService.getSwitchRef(selectedRoom?.idRoom));
+                const snapshot = await firebaseService.getSwitchRef(selectedRoom?.idRoom as string);
                 if (snapshot.exists()) {
-                    const items = Object.entries(snapshot.val()).map(([switchId, value]) => ({
+                    const items = Object.entries(snapshot.val()).map(([switchId, value]:[string, any]) => ({
                         switchId: switchId,
                         switch: value.switchName,
                         value: value.value,
                     }));
-                    setData(items);
+                    setData(items as SwitchItem[]);
                 } else {
                     setData([]);
                 }
@@ -43,12 +42,12 @@ function HomeScreen() {
             }
             setLoading(false);
         };
-    
+
         fetchData();
     }, [selectedRoom, update]);
 
     const updateData = (item: SwitchItem) => {
-        firebaseService.updateData(selectedRoom, item);
+        firebaseService.updateData(selectedRoom as Room, item);
         setUpdate(!update);
     };
 
@@ -67,7 +66,7 @@ function HomeScreen() {
                     {data.map((device, index) => (
                         <DeviceCard key={index} switchItems={[device]} updateData={updateData} />
                     ))}
-                    <AddDeviceButton roomId={selectedRoom?.idRoom} update={setUpdate} />
+                    <AddDeviceButton roomId={selectedRoom?.idRoom as string} update={setUpdate} />
                 </View>
             </ScrollView>
         </View>

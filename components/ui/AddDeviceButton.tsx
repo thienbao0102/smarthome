@@ -6,18 +6,18 @@ import firebaseService from '../../config/firebase';
 interface AddDeviceButtonProps {
     roomId: string;
     update: React.Dispatch<React.SetStateAction<boolean>>;
-  }
+}
 
-function AddDeviceButton({ roomId, update}: AddDeviceButtonProps) {
+function AddDeviceButton({ roomId, update }: AddDeviceButtonProps) {
     const addDevice = async () => {
-        await firebaseService.addSwitch(roomId);
+        await firebaseService.addSwitch(roomId as string);
         Alert.alert("Thành công", "Đã thêm thiết bị mới!");
         update((prev) => !prev);
     };
 
     return (
         <TouchableOpacity style={styles.container} onPress={addDevice}>
-            <View style={styles.button}> 
+            <View style={styles.button}>
                 <Ionicons name="add" size={24} color="white" />
             </View>
             <Text style={styles.text}>Add Device</Text>
